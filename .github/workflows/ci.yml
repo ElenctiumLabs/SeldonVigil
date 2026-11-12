@@ -57,10 +57,10 @@ jobs:
       - name: Start Redpanda broker
         run: |
           docker run -d --name redpanda \
-            -p 9092:9092 \
+            -p 9092:19092 \
             docker.redpanda.com/redpandadata/redpanda:v26.2.2 \
             redpanda start \
-              --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:9092 \
+              --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092 \
               --advertise-kafka-addr internal://redpanda:9092,external://127.0.0.1:9092 \
               --rpc-addr 0.0.0.0:33145 \
               --advertise-rpc-addr redpanda:33145 \
