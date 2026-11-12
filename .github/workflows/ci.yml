@@ -13,6 +13,24 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # The API integration tests boot the real host, which ensures its schema
+    # against PostgreSQL on first run.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: dev_password
+          POSTGRES_DB: seldonvigil
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d seldonvigil"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v7
 
