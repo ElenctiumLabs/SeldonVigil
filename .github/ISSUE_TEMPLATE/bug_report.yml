@@ -1,0 +1,68 @@
+name: Bug report
+description: Report a problem with SeldonVigil
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report. The more detail you give, the faster we can fix it.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us what you expected to happen.
+      placeholder: Describe the problem and the expected behaviour.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: A minimal reproduction helps us fix the issue faster.
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: false
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of the platform is affected?
+      options:
+        - API
+        - Workers
+        - Sdk
+        - Cli
+        - Frontend
+        - Infrastructure / Docker
+        - Documentation
+        - Other
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: The version tag or commit SHA where you saw this.
+      placeholder: v1.0.0 or abc1234
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace
+      description: Paste any relevant log output. Redact secrets and tenant data first.
+      render: text
+    validations:
+      required: false
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I have redacted any secrets, credentials or tenant data
+          required: true
