@@ -1,0 +1,24 @@
+# Dependencies and build output (rebuilt inside the images)
+**/node_modules
+frontend/dist
+tools/docs-viewer/dist
+**/bin
+**/obj
+**/artifacts
+**/packages
+
+# VCS and editor
+.git
+.vs
+.idea
+**/*.user
+
+# Logs and scratch
+*.log
+logs-*.txt
+api_*.log
+build-diag.txt
+
+# Not needed in the build context
+infrastructure/kubernetes
+infrastructure/terraform

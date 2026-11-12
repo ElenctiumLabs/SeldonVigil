@@ -1,0 +1,35 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy SAST
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore & Audit
+        run: |
+          dotnet restore
+          dotnet list package --vulnerable --include-transitive 2>/dev/null || true

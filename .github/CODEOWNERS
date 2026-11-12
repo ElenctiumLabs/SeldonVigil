@@ -1,0 +1,19 @@
+# Global
+* @seldonvigil/core-team
+
+# API & Domain
+src/SeldonVigil.Api/ @seldonvigil/api-team
+src/SeldonVigil.SharedKernel/ @seldonvigil/architecture-team
+
+# Workers
+src/SeldonVigil.Workers/ @seldonvigil/platform-team
+
+# SDK & CLI
+src/SeldonVigil.Sdk/ @seldonvigil/client-team
+src/SeldonVigil.Cli/ @seldonvigil/client-team
+
+# Infrastructure
+infrastructure/ @seldonvigil/sre-team
+
+# Tests
+tests/ @seldonvigil/qa-team

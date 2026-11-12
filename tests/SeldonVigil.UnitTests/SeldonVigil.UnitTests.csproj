@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SeldonVigil.UnitTests</AssemblyName>
+    <RootNamespace>SeldonVigil.UnitTests</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/SeldonVigil.Api/SeldonVigil.Api.csproj" />
+    <ProjectReference Include="../../src/SeldonVigil.SharedKernel/SeldonVigil.SharedKernel.csproj" />
+    <ProjectReference Include="../../src/SeldonVigil.Workers/SeldonVigil.Workers.csproj" />
+    <ProjectReference Include="../../src/SeldonVigil.Sdk/SeldonVigil.Sdk.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="CostIntelligence\Domain\Entities\" />
+    <Folder Include="Governance\Domain\Entities\" />
+    <Folder Include="Identity\Domain\Entities\" />
+    <Folder Include="Observability\Domain\Entities\" />
+    <Folder Include="Security\Domain\Entities\" />
+    <Folder Include="Shared\Infrastructure\Authentication\" />
+  </ItemGroup>
+</Project>

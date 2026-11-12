@@ -1,0 +1,8 @@
+# Pin the .NET toolchain to the mise-managed runtime (the same setup our other
+# .NET projects rely on via the global mise config). The ASP.NET Core 10 runtime lives in the
+# mise dotnet-root, which mise exports as DOTNET_ROOT. Launching a built apphost
+# with DOTNET_ROOT unset falls back to /usr/share/dotnet, which only ships the
+# 8.0 ASP.NET runtime and fails for net10 apps. Run via `mise exec` (or any
+# mise-activated shell) so the correct runtime is resolved.
+[tools]
+dotnet = "latest"

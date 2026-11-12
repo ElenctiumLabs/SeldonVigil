@@ -1,0 +1,6 @@
+using SeldonVigil.Api.Modules.Identity.Domain.ValueObjects;
+using SeldonVigil.Api.Shared.Application;
+
+namespace SeldonVigil.Api.Modules.Identity.Application.Commands;
+
+internal sealed record RevokeAgentCommand(AgentId AgentId, string Reason) : ICommand;

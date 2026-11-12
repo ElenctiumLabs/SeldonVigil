@@ -1,0 +1,492 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Cormorant+SC:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Fira+Code:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Prime Radiant Theme - SeldonVigil Branding */
+    --background: 212 28% 5%;    /* #080a0f */
+    --foreground: 210 20% 94%;   /* #f1f5f9 */
+    --card: 215 25% 9%;          /* #11151c */
+    --card-foreground: 210 20% 94%;
+    --popover: 215 25% 9%;
+    --popover-foreground: 210 20% 94%;
+    --primary: 43 66% 54%;       /* #fbbf24 - Gold (Proposer) */
+    --primary-foreground: 212 28% 5%;
+    --secondary: 217 22% 12%;    /* #161b26 */
+    --secondary-foreground: 210 20% 94%;
+    --muted: 217 22% 12%;
+    --muted-foreground: 212 18% 60%; /* #9bb0cb */
+    --accent: 43 66% 54%;
+    --accent-foreground: 212 28% 5%;
+    --destructive: 14 58% 48%;   /* #b05a3a - Red */
+    --destructive-foreground: 212 28% 5%;
+    --border: 0 0% 100% / 0.035;  /* rgba(255,255,255,0.035) */
+    --input: 0 0% 100% / 0.06;
+    --ring: 43 66% 54%;
+    --success: 160 84% 39%;      /* #10b981 - Green (Judge) */
+    --radius: 3px;
+    --sidebar-bg: 212 30% 4%;    /* #0a0d12 */
+    --sidebar-foreground: 210 20% 94%;
+    --sidebar-muted: 212 18% 60%;
+    --header-height: 4rem;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.6);
+    --glow-primary: 0 0 20px rgba(251, 191, 36, 0.3);
+    --glow-secondary: 0 0 20px rgba(251, 191, 36, 0.2);
+    --gradient-primary: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    --gradient-secondary: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --gradient-surface: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+
+      /* Typography Tokens */
+      --font-display:    'Cardo', serif;
+      --font-display-sc: 'Cormorant SC', serif;
+      --font-body:       'EB Garamond', serif;
+      --font-mono:       'Fira Code', monospace;
+  }
+
+  * {
+    @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+  }
+
+  .light * {
+    scrollbar-color: rgba(30, 25, 18, 0.2) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+
+  .light ::-webkit-scrollbar-thumb {
+    background: rgba(30, 25, 18, 0.2);
+  }
+  .light ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-size: 1.05rem;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 800;
+  }
+    h1 {
+        font-family: 'EB Garamond', serif;
+        padding-bottom: 1rem;
+        font-weight: 700;
+    }
+
+  code, pre, .mono {
+    font-family: 'Fira Code', ui-monospace, monospace;
+    font-size: 0.92em;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-primary;
+  }
+
+  .light {
+    /* Prime Radiant Light Theme - SeldonVigil Branding */
+    --background: 40 14% 97%;    /* #faf8f5 */
+    --foreground: 30 20% 6%;     /* #0f0c08 */
+    --card: 0 0% 100%;           /* #ffffff */
+    --card-foreground: 30 20% 6%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 20% 6%;
+    --primary: 41 64% 29%;       /* #78591a - darkened gold for light bg */
+    --primary-foreground: 40 14% 97%;
+    --secondary: 36 22% 91%;     /* #f2ece1 */
+    --secondary-foreground: 30 20% 6%;
+    --muted: 36 22% 91%;
+    --muted-foreground: 25 14% 16%; /* #2c241b */
+    --accent: 41 64% 29%;
+    --accent-foreground: 40 14% 97%;
+    --destructive: 14 58% 38%;   /* #8c3e20 - Red (light) */
+    --destructive-foreground: 40 14% 97%;
+    --border: 30 10% 12% / 0.07; /* rgba(30,25,18,0.07) */
+    --input: 30 10% 12% / 0.09;
+    --ring: 41 64% 29%;
+    --success: 152 58% 30%;      /* #046340 - Green (Judge, light) */
+    --sidebar-bg: 36 18% 94%;    /* #f0ede6 */
+    --sidebar-foreground: 30 20% 6%;
+    --sidebar-muted: 25 14% 16%;
+    --card-shadow: 0 8px 30px rgba(40, 30, 15, 0.06), 0 1px 3px rgba(40, 30, 15, 0.04);
+    --card-shadow-hover: 0 12px 40px rgba(40, 30, 15, 0.1), 0 2px 6px rgba(40, 30, 15, 0.06);
+    --glow-primary: 0 0 20px rgba(251, 191, 36, 0.2);
+    --glow-secondary: 0 0 20px rgba(251, 191, 36, 0.15);
+    --gradient-primary: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    --gradient-secondary: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --gradient-surface: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.01) 100%);
+  }
+}
+
+@layer components {
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-2 rounded-xl text-[1rem] leading-snug font-medium transition-all duration-200;
+  }
+
+  .sidebar-link-active {
+    @apply bg-primary/10 text-primary shadow-sm;
+  }
+
+  .sidebar-link-inactive {
+    color: hsl(var(--sidebar-muted));
+    @apply hover:bg-emerald-500/[0.08];
+  }
+  .sidebar-link-inactive:hover {
+    color: hsl(var(--sidebar-foreground));
+  }
+
+  .stat-card {
+    @apply rounded-2xl border border-border p-6 transition-all duration-200;
+    box-shadow: var(--card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .light .stat-card {
+    box-shadow: var(--card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  .stat-card:hover {
+    box-shadow: var(--card-shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  /* ── Branded stat card — SeldonVigil design system ── */
+  .stat-card-branded {
+    background: rgba(17, 21, 28, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.065);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.25s ease;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  .stat-card-branded:hover {
+    border-color: rgba(251, 191, 36, 0.35);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.55),
+      0 0 20px rgba(251, 191, 36, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    transform: translateY(-2px) translateZ(0);
+  }
+
+  .light .stat-card-branded {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(120, 89, 26, 0.14);
+    box-shadow:
+      0 8px 30px rgba(40, 30, 15, 0.07),
+      0 1px 3px rgba(40, 30, 15, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  .light .stat-card-branded:hover {
+    border-color: rgba(120, 89, 26, 0.40);
+    box-shadow:
+      0 12px 40px rgba(40, 30, 15, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  /* Metallic gold shimmer — cycles #c8963e → #fbbf24 → #e8d48a → ... */
+  .text-gold-shimmer {
+    background: linear-gradient(
+      135deg,
+      #c8963e 0%,
+      #fbbf24 20%,
+      #e8d48a 40%,
+      #c8963e 60%,
+      #fbbf24 80%,
+      #e8d48a 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gold-shimmer 8s linear infinite;
+  }
+
+  .light .text-gold-shimmer {
+    background: linear-gradient(
+      135deg,
+      #4d350b 0%,
+      #735214 25%,
+      #8f6a22 50%,
+      #6b4a10 75%,
+      #4d350b 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gold-shimmer 8s linear infinite;
+  }
+
+  @keyframes gold-shimmer {
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
+
+  /* Alchemical icon container — emerald vitriol ring with glow-on-hover */
+  .stat-icon-container {
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.22);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .stat-card-branded:hover .stat-icon-container,
+  .stat-card:hover .stat-icon-container,
+  .premium-panel:hover .stat-icon-container {
+    transform: scale(1.1);
+    box-shadow: 0 0 18px rgba(16, 185, 129, 0.28);
+  }
+
+  .premium-panel {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.03),
+      0 1px 2px rgba(0, 0, 0, 0.25);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .light .premium-panel {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 1px 3px rgba(138, 106, 40, 0.07);
+  }
+
+  .premium-panel:hover {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.045),
+      0 10px 28px rgba(0, 0, 0, 0.35);
+  }
+
+  .light .premium-panel:hover {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 12px 32px rgba(138, 106, 40, 0.1);
+  }
+
+  .page-header {
+    @apply mb-8;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold text-foreground tracking-tight;
+  }
+
+  .page-subtitle {
+    @apply text-muted-foreground mt-1.5 text-sm;
+  }
+
+  .glass-panel {
+    @apply backdrop-blur-xl border border-border rounded-2xl;
+    background: rgba(17, 21, 28, 0.78);
+    border-color: rgba(255, 255, 255, 0.055);
+  }
+
+  .light .glass-panel {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: hsl(var(--border));
+  }
+
+  /* Docs sub-nav mirrors the standalone docs viewer's sidebar typeface */
+  .font-docs-nav {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .glass-card {
+    background: rgba(17, 21, 28, 0.9);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.055);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px rgba(255, 255, 255, 0.04);
+  }
+
+  .light .glass-card {
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(138, 106, 40, 0.12);
+    box-shadow: 0 8px 32px rgba(138, 106, 40, 0.06), inset 0 1px rgba(255, 255, 255, 0.9);
+  }
+
+  .glass-card-hover {
+    transition: all 0.3s ease;
+  }
+
+  .glass-card-hover:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .gradient-border {
+    position: relative;
+    background: linear-gradient(var(--card), var(--card)) padding-box,
+                linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) border-box;
+    border: 2px solid transparent;
+  }
+
+  .gradient-text {
+    color: transparent;
+    background: linear-gradient(135deg, #fbbf24 0%, #e8d48a 25%, #fff3c4 50%, #e8d48a 75%, #fbbf24 100%) 0 0 / 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer-text 4s linear infinite;
+  }
+
+  .light .gradient-text {
+    background: linear-gradient(135deg, #4d350b 0%, #735214 25%, #8f6a22 50%, #6b4a10 75%, #4d350b 100%) 0 0 / 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  @keyframes shimmer-text {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .glyph-divider {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    color: hsl(var(--muted-foreground));
+    letter-spacing: 0.5em;
+    font-size: 1rem;
+  }
+
+  .glyph-divider::before,
+  .glyph-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09), transparent);
+  }
+
+  .light .glyph-divider::before,
+  .light .glyph-divider::after {
+    background: linear-gradient(90deg, transparent, rgba(30, 25, 18, 0.18), transparent);
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Layout utilities */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ── Custom Themed Scrollbar for SeldonVigil ── */
+  .scrollbar-themed {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  }
+  .scrollbar-themed::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-themed::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-themed::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 9999px;
+  }
+  .scrollbar-themed::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+
+  .light .scrollbar-themed {
+    scrollbar-color: rgba(30, 25, 18, 0.22) transparent;
+  }
+  .light .scrollbar-themed::-webkit-scrollbar-thumb {
+    background: rgba(30, 25, 18, 0.22);
+  }
+  .light .scrollbar-themed::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+
+  /* Soft edge hairlines — fade at both ends instead of hard full-length rules */
+  .hairline-b { position: relative; }
+  .hairline-b::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07) 15%, rgba(255, 255, 255, 0.07) 85%, transparent);
+  }
+
+  .hairline-t { position: relative; }
+  .hairline-t::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07) 15%, rgba(255, 255, 255, 0.07) 85%, transparent);
+  }
+
+  .hairline-r { position: relative; }
+  .hairline-r::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; right: 0;
+    width: 1px;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.06) 8%, rgba(255, 255, 255, 0.06) 92%, transparent);
+  }
+
+  .light .hairline-b::after,
+  .light .hairline-t::before {
+    background: linear-gradient(90deg, transparent, rgba(30, 25, 18, 0.1) 15%, rgba(30, 25, 18, 0.1) 85%, transparent);
+  }
+
+  .light .hairline-r::after {
+    background: linear-gradient(180deg, transparent, rgba(30, 25, 18, 0.09) 8%, rgba(30, 25, 18, 0.09) 92%, transparent);
+  }
+}

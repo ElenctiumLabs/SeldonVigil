@@ -1,0 +1,165 @@
+{
+  "dashboard": {
+    "title": "SeldonVigil Platform Overview",
+    "tags": ["seldonvigil", "platform"],
+    "timezone": "UTC",
+    "schemaVersion": 39,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "API Request Rate",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{job=\"seldonvigil-api\"}[1m])) by (status)",
+            "legendFormat": "{{status}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "custom": {
+              "lineWidth": 2,
+              "fillOpacity": 10
+            }
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+      },
+      {
+        "id": 2,
+        "title": "API Latency (P50/P95/P99)",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"seldonvigil-api\"}[5m])) by (le))",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"seldonvigil-api\"}[5m])) by (le))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"seldonvigil-api\"}[5m])) by (le))",
+            "legendFormat": "P99"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": { "lineWidth": 2 }
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+      },
+      {
+        "id": 3,
+        "title": "Active Agents by Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(seldonvigil_agents_total) by (status)",
+            "legendFormat": "{{status}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              { "options": { "match": "Active", "result": { "color": "green" } } },
+              { "options": { "match": "Suspended", "result": { "color": "yellow" } } },
+              { "options": { "match": "Revoked", "result": { "color": "red" } } }
+            ]
+          }
+        },
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 8 }
+      },
+      {
+        "id": 4,
+        "title": "Trace Ingestion Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(seldonvigil_traces_ingested_total[1m]))",
+            "legendFormat": "traces/sec"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 8 }
+      },
+      {
+        "id": 5,
+        "title": "Consumer Lag",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "redpanda_kafka_consumer_group_lag_sum{redpanda_group=\"seldonvigil-workers\"}",
+            "legendFormat": "total lag"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 1000 },
+                { "color": "red", "value": 10000 }
+              ]
+            }
+          }
+        },
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 8 }
+      },
+      {
+        "id": 6,
+        "title": "Daily AI Cost",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(seldonvigil_ai_cost_total[24h]))",
+            "legendFormat": "USD"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": { "unit": "currencyUSD" }
+        },
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 8 }
+      },
+      {
+        "id": 7,
+        "title": "Security Violations (24h)",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum(increase(seldonvigil_security_violations_total[1h])) by (severity)",
+            "legendFormat": "{{severity}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "stacking": { "mode": "normal", "group": "A" },
+              "fillOpacity": 50
+            }
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 }
+      },
+      {
+        "id": 8,
+        "title": "Pod Resource Usage",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum(container_cpu_usage_seconds_total{pod=~\"seldonvigil-api-.*\"}) by (pod)",
+            "legendFormat": "{{pod}} CPU"
+          },
+          {
+            "expr": "sum(container_memory_working_set_bytes{pod=~\"seldonvigil-api-.*\"}) by (pod) / 1024 / 1024",
+            "legendFormat": "{{pod}} Memory (Mi)"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 }
+      }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>SeldonVigil.Sdk</AssemblyName>
+    <RootNamespace>SeldonVigil.Sdk</RootNamespace>
+    <PackageId>SeldonVigil.Sdk</PackageId>
+    <Version>1.0.1</Version>
+    <Authors>ElenctiumLabs</Authors>
+    <Description>Official .NET SDK for SeldonVigil</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageProjectUrl>https://github.com/ElenctiumLabs/SeldonVigil</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ElenctiumLabs/SeldonVigil</RepositoryUrl>
+    <PackageTags>AI;Agent;Governance;Security;Observability;SeldonVigil</PackageTags>
+    <PackageReleaseNotes>Initial release of the SeldonVigil .NET SDK</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- The SDK's public surface is data shapes: settable, object-initializable DTOs
+         and configuration-bound strings. These API-design rules do not apply. -->
+    <NoWarn>CA1002;CA2227;CA1056</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Authentication\" />
+    <Folder Include="Configuration\" />
+    <Folder Include="Agents\" />
+    <Folder Include="Observability\" />
+    <Folder Include="Security\" />
+    <Folder Include="CostIntelligence\" />
+    <Folder Include="Governance\" />
+    <Folder Include="Analytics\" />
+    <Folder Include="AIReasoning\" />
+    <Folder Include="Integration\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="OpenTelemetry\" />
+  </ItemGroup>
+</Project>

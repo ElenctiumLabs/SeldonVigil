@@ -1,0 +1,142 @@
+# infrastructure/docker/docker-compose.yml
+#
+# NOTE: PostgreSQL is intentionally NOT containerised here. It must be
+# installed and running on the host (localhost:5432). Containers reach it via
+# host.docker.internal. The event broker is Redpanda
+# and IS containerised (service `redpanda`, broker API on localhost:9092).
+#
+# Cache: the app defaults to in-process memory (Cache:Provider=Memory), so no
+# cache server is shipped. Multi-replica deployments can run any RESP-compatible
+# server (Garnet/Redis/Valkey) and set Cache:Provider=Redis.
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.api
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Postgres runs on the host; Redpanda is an in-network service.
+      - ConnectionStrings__PostgreSQL=Host=host.docker.internal;Port=5432;Database=seldonvigil;Username=postgres;Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__Broker=redpanda:9092
+      - Authentication__Authority=${AUTHORITY}
+      - Authentication__Audience=${AUDIENCE}
+      - OpenAI__ApiKey=${OPENAI_API_KEY}
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - seldonvigil
+    # NOTE: runtime image is distroless (no shell/wget) - container healthchecks are
+    # not executable here. Orchestrators should probe GET /healthz instead.
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.worker
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      # Postgres runs on the host; Redpanda is an in-network service.
+      - ConnectionStrings__PostgreSQL=Host=host.docker.internal;Port=5432;Database=seldonvigil;Username=postgres;Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__Broker=redpanda:9092
+      - OpenAI__ApiKey=${OPENAI_API_KEY}
+    depends_on:
+      - api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - seldonvigil
+    deploy:
+      replicas: 2
+
+  # Redpanda — the event broker. Single-node dev container; no JVM.
+  # Broker API reachable on localhost:9092 (host) and redpanda:9092 (in-network);
+  # Admin API on localhost:9644 for `rpk redpanda admin ...` / metrics.
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v26.2.2
+    command:
+      - redpanda
+      - start
+      # Two listeners: `internal` for other compose services, `external` for the
+      # host. The external container port 19092 is published as host 9092 so
+      # existing localhost:9092 configuration keeps working unchanged.
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://redpanda:9092,external://127.0.0.1:9092
+      - --rpc-addr
+      - redpanda:33145
+      - --advertise-rpc-addr
+      - redpanda:33145
+      - --mode
+      - dev-container
+      - --smp
+      - "1"
+      - --default-log-level=info
+    ports:
+      - "9092:19092"
+      - "9644:9644"
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "info"]
+      interval: 10s
+      timeout: 15s
+      retries: 10
+    networks:
+      - seldonvigil
+
+  # One-shot setup: enable Redpanda consumer-group lag metrics for Prometheus.
+  # Runs once after the broker is healthy, then exits.
+  redpanda-setup:
+    image: docker.redpanda.com/redpandadata/redpanda:v26.2.2
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    environment:
+      - REDPANDA_BROKERS=redpanda:9092
+      - REDPANDA_ADMIN_ADDRS=redpanda:9644
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Enabling Redpanda consumer group metrics..."
+        rpk -X admin.hosts=redpanda:9644 cluster config set enable_consumer_group_metrics '["group", "partition", "consumer_lag"]'
+        rpk -X admin.hosts=redpanda:9644 cluster config set consumer_group_lag_collection_interval_sec 15
+        echo "Consumer group lag metrics enabled."
+    networks:
+      - seldonvigil
+
+  # Prometheus — metrics. Scrapes the API /metrics endpoint and Redpanda's
+  # /public_metrics. Config lives in infrastructure/prometheus/prometheus.yml.
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - seldonvigil
+
+  # Web UI — nginx serving the built React app, proxying /api to the API.
+  web:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - seldonvigil
+
+volumes:
+  redpanda_data:
+  prometheus_data:
+
+networks:
+  seldonvigil:
+    driver: bridge

@@ -1,0 +1,58 @@
+# Production overrides for the SeldonVigil compose stack.
+#
+# Usage:
+#   cd infrastructure/docker
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# The base docker-compose.yml is a DEVELOPMENT configuration: it sets
+# ASPNETCORE_ENVIRONMENT=Development and DOTNET_ENVIRONMENT=Development, which
+# enables the /dev/token endpoint and the development login backdoor (any
+# username with password "dev" returns an administrator token). This override
+# switches both services to Production, which disables dev auth and turns on the
+# production configuration checks.
+#
+# Required environment variables (see docs/HOSTING_REQUIREMENTS.md):
+#   POSTGRES_PASSWORD        already required by the base stack
+#   AUTHORITY                OIDC discovery URL of the real identity provider
+#   AUDIENCE                 API audience issued by that provider
+#   BROKER_ADDRESS           broker bootstrap servers (e.g. redpanda.example.com:9093)
+#   BROKER_SECURITY_PROTOCOL SASL_SSL
+#   BROKER_SASL_MECHANISM    SCRAM-SHA-256
+#   BROKER_SASL_USERNAME     broker principal
+#   BROKER_SASL_PASSWORD     broker principal password
+#   BROKER_SSL_CA_LOCATION   path to the broker CA certificate
+#
+# Optional:
+#   AZURE_KEYVAULT_NAME      set to load secrets from Azure Key Vault; when unset,
+#                            secrets come from environment variables
+#   REDIS_CONNECTION_STRING  set to a shared cache for multi-replica deployments
+#
+# The API refuses to start when a required value is missing, so a misconfigured
+# production deployment fails closed instead of silently running in development mode.
+
+services:
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Authentication__Authority: ${AUTHORITY}
+      Authentication__Audience: ${AUDIENCE}
+      ConnectionStrings__Broker: ${BROKER_ADDRESS}
+      # Optional: shared cache for multi-replica deployments (also set Cache__Provider=Redis)
+      ConnectionStrings__Redis: ${REDIS_CONNECTION_STRING:-localhost:6379}
+      Broker__SecurityProtocol: ${BROKER_SECURITY_PROTOCOL}
+      Broker__SaslMechanism: ${BROKER_SASL_MECHANISM}
+      Broker__SaslUsername: ${BROKER_SASL_USERNAME}
+      Broker__SaslPassword: ${BROKER_SASL_PASSWORD}
+      Broker__SslCaLocation: ${BROKER_SSL_CA_LOCATION}
+      # Optional: uncomment to load secrets from Azure Key Vault instead of env vars
+      # Azure__KeyVaultName: ${AZURE_KEYVAULT_NAME}
+
+  worker:
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      ConnectionStrings__Broker: ${BROKER_ADDRESS}
+      Broker__SecurityProtocol: ${BROKER_SECURITY_PROTOCOL}
+      Broker__SaslMechanism: ${BROKER_SASL_MECHANISM}
+      Broker__SaslUsername: ${BROKER_SASL_USERNAME}
+      Broker__SaslPassword: ${BROKER_SASL_PASSWORD}
+      Broker__SslCaLocation: ${BROKER_SSL_CA_LOCATION}

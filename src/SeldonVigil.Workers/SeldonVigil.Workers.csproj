@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>SeldonVigil.Workers</AssemblyName>
+    <RootNamespace>SeldonVigil.Workers</RootNamespace>
+    <NoWarn>CA1812;CA1873</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SeldonVigil.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Confluent.Kafka" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../SeldonVigil.Api/SeldonVigil.Api.csproj" />
+    <ProjectReference Include="../SeldonVigil.SharedKernel/SeldonVigil.SharedKernel.csproj" />
+    <ProjectReference Include="../SeldonVigil.Telemetry/SeldonVigil.Telemetry.csproj" />
+  </ItemGroup>
+</Project>

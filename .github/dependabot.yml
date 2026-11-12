@@ -1,0 +1,71 @@
+# Dependabot configuration.
+#
+# NuGet versions are managed centrally in Directory.Packages.props, so every
+# dependency update lands in one place. The ignore rules below cover updates that
+# are deliberately out of reach: licence changes and the .NET 11 platform band.
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      # Keep the shared-framework packages moving together.
+      platform:
+        patterns:
+          - "Microsoft.Extensions.*"
+          - "Microsoft.EntityFrameworkCore*"
+          - "Microsoft.AspNetCore*"
+        update-types:
+          - "patch"
+          - "minor"
+    ignore:
+      # MediatR v13+ is published under a commercial licence; 12.5.0 is the last
+      # Apache-2.0 release.
+      - dependency-name: "MediatR"
+        update-types: ["version-update:semver-major"]
+
+      # FluentAssertions v8+ is the Xceed "non-commercial use" licence; 7.2.0 is
+      # the last Apache-2.0 release.
+      - dependency-name: "FluentAssertions"
+        update-types: ["version-update:semver-major"]
+
+      # Swashbuckle.AspNetCore v11 depends on Microsoft.OpenApi v3, which
+      # Microsoft.AspNetCore.OpenApi 10.0.x does not allow (< 3.0.0).
+      - dependency-name: "Swashbuckle.AspNetCore"
+        update-types: ["version-update:semver-major"]
+
+      # Microsoft.OpenApi v3 is blocked by Microsoft.AspNetCore.OpenApi 10.0.x.
+      - dependency-name: "Microsoft.OpenApi"
+        versions: [">= 3.0.0"]
+
+      # The Roslyn Workspaces packages are pinned to the .NET 10 SDK band by
+      # Microsoft.EntityFrameworkCore.Design 10.0.x (which requires exactly 5.0.0).
+      # Bump them together with EF Core.
+      - dependency-name: "Microsoft.CodeAnalysis.CSharp"
+        versions: [">= 5.1.0"]
+      - dependency-name: "Microsoft.CodeAnalysis.Common"
+        versions: [">= 5.1.0"]
+      - dependency-name: "Microsoft.CodeAnalysis.CSharp.Workspaces"
+        versions: [">= 5.1.0"]
+      - dependency-name: "Microsoft.CodeAnalysis.Analyzers"
+        versions: [">= 4.0.0"]
+
+      # The .NET 11 platform packages require the .NET 11 SDK. This repository is
+      # on the .NET 10 band (10.0.15); revisit when the target framework moves.
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.EntityFrameworkCore*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.AspNetCore*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.CodeAnalysis.NetAnalyzers"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Npgsql.EntityFrameworkCore.PostgreSQL"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

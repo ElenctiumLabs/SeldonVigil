@@ -1,0 +1,77 @@
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Unit Tests
+        run: dotnet test tests/SeldonVigil.UnitTests --no-build --logger trx
+
+      - name: Integration Tests
+        run: dotnet test tests/SeldonVigil.IntegrationTests --no-build --logger trx
+
+      - name: API Tests
+        run: dotnet test tests/SeldonVigil.ApiTests --no-build --logger trx
+
+      - name: Dependency Audit
+        run: dotnet list package --vulnerable --include-transitive
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+  build-docker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API Docker image
+        run: docker build -f infrastructure/docker/Dockerfile.api -t seldonvigil-api:${{ github.sha }} .
+
+      - name: Build Worker Docker image
+        run: docker build -f infrastructure/docker/Dockerfile.worker -t seldonvigil-worker:${{ github.sha }} .
+
+      - name: Build Web Docker image
+        run: docker build -f infrastructure/docker/Dockerfile.frontend -t seldonvigil-web:${{ github.sha }} .

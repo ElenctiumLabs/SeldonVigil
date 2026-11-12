@@ -1,0 +1,103 @@
+# infrastructure/prometheus/rules/seldonvigil-alerts.yml
+groups:
+  - name: seldonvigil-api
+    rules:
+      - alert: SeldonVigilAPIHighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="seldonvigil-api",status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job="seldonvigil-api"}[5m]))
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "SeldonVigil API error rate is high"
+          description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+      - alert: SeldonVigilAPIHighLatency
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(http_request_duration_seconds_bucket{job="seldonvigil-api"}[5m])) by (le)
+          ) > 0.1
+        for: 3m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "SeldonVigil API P99 latency is high"
+          description: "P99 latency is {{ $value }}s for the last 5 minutes"
+
+      - alert: SeldonVigilAPITooManyRequests
+        expr: |
+          sum(rate(http_requests_total{job="seldonvigil-api",status="429"}[1m])) > 100
+        for: 1m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Rate limiting triggered frequently"
+          description: "More than 100 rate-limited requests per minute"
+
+  - name: seldonvigil-workers
+    rules:
+      - alert: SeldonVigilWorkerHighLag
+        expr: |
+          redpanda_kafka_consumer_group_lag_sum{redpanda_group="seldonvigil-workers"} > 10000
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "SeldonVigil worker consumer lag is high"
+          description: "Consumer lag is {{ $value }} messages"
+
+  - name: seldonvigil-data
+    rules:
+      - alert: SeldonVigilPostgreSQLConnectionsHigh
+        expr: |
+          pg_stat_activity_count / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "PostgreSQL connection pool near limit"
+          description: "{{ $value | humanizePercentage }} of connections in use"
+
+      - alert: SeldonVigilRedisMemoryHigh
+        expr: |
+          redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Redis memory usage is critical"
+          description: "Memory usage is {{ $value | humanizePercentage }}"
+
+  - name: seldonvigil-security
+    rules:
+      - alert: SeldonVigilSecurityViolationSpike
+        expr: |
+          sum(increase(seldonvigil_security_violations_total[1h])) > 100
+        for: 5m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Security violation spike detected"
+          description: "{{ $value }} violations in the last hour"
+
+      - alert: SeldonVigilAgentSuspensionRate
+        expr: |
+          sum(rate(seldonvigil_agent_status_changes_total{to="suspended"}[5m])) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High rate of agent suspensions"
+          description: "{{ $value }} agents suspended per second"

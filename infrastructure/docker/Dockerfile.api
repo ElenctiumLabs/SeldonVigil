@@ -1,0 +1,49 @@
+# infrastructure/docker/Dockerfile.api
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy solution files first for layer caching
+COPY Directory.Build.props Directory.Packages.props global.json ./
+COPY src/SeldonVigil.SharedKernel/ src/SeldonVigil.SharedKernel/
+COPY src/SeldonVigil.SourceGenerators/ src/SeldonVigil.SourceGenerators/
+COPY src/SeldonVigil.Telemetry/ src/SeldonVigil.Telemetry/
+COPY src/SeldonVigil.Sdk/ src/SeldonVigil.Sdk/
+COPY src/SeldonVigil.Api/ src/SeldonVigil.Api/
+
+# Restore with locked mode for reproducible builds
+RUN dotnet restore src/SeldonVigil.Api/SeldonVigil.Api.csproj --locked-mode -r linux-x64
+
+# Build and publish
+RUN dotnet publish src/SeldonVigil.Api/SeldonVigil.Api.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore \
+    -p:StripSymbols=true \
+    -p:InvariantGlobalization=true
+
+# Runtime stage - distroless for minimal attack surface
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+
+# Create non-root user
+RUN useradd --no-create-home --shell /usr/sbin/nologin appuser
+
+WORKDIR /app
+
+# Copy published application
+COPY --from=build /app/publish .
+
+# Set ownership
+RUN chown -R appuser:appuser /app
+
+# Security hardening
+USER appuser
+
+# Health check — TCP probe (curl/wget not available in minimal image)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD ["bash", "-c", "echo > /dev/tcp/localhost/8080 || exit 1"]
+
+EXPOSE 8080
+EXPOSE 8081
+
+ENTRYPOINT ["/app/SeldonVigil.Api"]

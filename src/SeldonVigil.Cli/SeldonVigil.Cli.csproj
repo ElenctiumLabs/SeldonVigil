@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>seldonvigil</AssemblyName>
+    <RootNamespace>SeldonVigil.Cli</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>seldonvigil</ToolCommandName>
+    <PackageId>SeldonVigil.Cli</PackageId>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SeldonVigil.Sdk\SeldonVigil.Sdk.csproj" />
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Spectre.Console" />
+  </ItemGroup>
+</Project>

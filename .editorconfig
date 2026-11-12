@@ -1,0 +1,80 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# New line preferences
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+
+# Indentation preferences
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_labels = one_less_than_current
+
+# Space preferences
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+
+# Wrapping preferences
+csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_blocks = true
+
+# Using directive preferences
+csharp_using_directive_placement = outside_namespace
+
+# Modifier preferences
+csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async
+
+# Expression-level preferences
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+csharp_style_expression_bodied_methods = false:silent
+csharp_style_expression_bodied_constructors = false:silent
+csharp_style_expression_bodied_operators = false:silent
+csharp_style_expression_bodied_properties = true:silent
+csharp_style_expression_bodied_indexers = true:silent
+csharp_style_expression_bodied_accessors = true:silent
+csharp_style_expression_bodied_lambdas = true:silent
+csharp_style_expression_bodied_local_functions = false:silent
+
+# Pattern matching preferences
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_prefer_switch_expression = true:suggestion
+
+# Null-checking preferences
+csharp_style_throw_expression = true:suggestion
+csharp_style_conditional_delegate_call = true:suggestion
+
+# Code block preferences
+csharp_prefer_braces = true:suggestion
+
+# Unused value preferences
+csharp_style_unused_value_expression_statement_preference = discard_variable:suggestion
+csharp_style_unused_value_assignment_preference = discard_variable:suggestion
+
+# Index and range preferences
+csharp_style_prefer_index_operator = true:suggestion
+csharp_style_prefer_range_operator = true:suggestion
+
+# Miscellaneous preferences
+csharp_style_deconstructed_variable_declaration = true:suggestion
+csharp_style_prefer_local_over_anonymous_function = true:suggestion
+csharp_style_inlined_variable_declaration = true:suggestion
+csharp_style_prefer_tuple_swap = true:suggestion
