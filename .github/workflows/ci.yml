@@ -13,16 +13,34 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # The API integration tests boot the real host, which ensures its schema
+    # against PostgreSQL on first run.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: dev_password
+          POSTGRES_DB: seldonvigil
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d seldonvigil"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
@@ -36,6 +54,31 @@ jobs:
       - name: Unit Tests
         run: dotnet test tests/SeldonVigil.UnitTests --no-build --configuration Release --logger trx
 
+      - name: Start Redpanda broker
+        run: |
+          docker run -d --name redpanda \
+            -p 9092:19092 \
+            docker.redpanda.com/redpandadata/redpanda:v26.2.2 \
+            redpanda start \
+              --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092 \
+              --advertise-kafka-addr internal://redpanda:9092,external://127.0.0.1:9092 \
+              --rpc-addr 0.0.0.0:33145 \
+              --advertise-rpc-addr redpanda:33145 \
+              --mode dev-container \
+              --smp 1 \
+              --default-log-level info
+          for i in $(seq 1 60); do
+            if docker exec redpanda rpk cluster health >/dev/null 2>&1; then
+              echo "Redpanda is healthy"
+              docker exec redpanda rpk cluster health
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Redpanda failed to become healthy"
+          docker logs redpanda
+          exit 1
+
       - name: Integration Tests
         run: dotnet test tests/SeldonVigil.IntegrationTests --no-build --configuration Release --logger trx
 
@@ -48,10 +91,10 @@ jobs:
   build-frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
 
@@ -65,7 +108,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build API Docker image
         run: docker build -f infrastructure/docker/Dockerfile.api -t seldonvigil-api:${{ github.sha }} .
