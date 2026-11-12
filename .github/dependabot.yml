@@ -65,6 +65,11 @@ updates:
       - dependency-name: "Npgsql.EntityFrameworkCore.PostgreSQL"
         update-types: ["version-update:semver-major"]
 
+      # dotnet-ef 11 targets the .NET 11 / EF Core 11 band; this repository is on
+      # the .NET 10 band (10.0.15). Revisit when the target framework moves.
+      - dependency-name: "dotnet-ef"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

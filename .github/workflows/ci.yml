@@ -34,13 +34,13 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Unit Tests
-        run: dotnet test tests/SeldonVigil.UnitTests --no-build --logger trx
+        run: dotnet test tests/SeldonVigil.UnitTests --no-build --configuration Release --logger trx
 
       - name: Integration Tests
-        run: dotnet test tests/SeldonVigil.IntegrationTests --no-build --logger trx
+        run: dotnet test tests/SeldonVigil.IntegrationTests --no-build --configuration Release --logger trx
 
       - name: API Tests
-        run: dotnet test tests/SeldonVigil.ApiTests --no-build --logger trx
+        run: dotnet test tests/SeldonVigil.ApiTests --no-build --configuration Release --logger trx
 
       - name: Dependency Audit
         run: dotnet list package --vulnerable --include-transitive
