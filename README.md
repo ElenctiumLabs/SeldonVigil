@@ -15,7 +15,7 @@ SeldonVigil follows a modular monolith architecture with clear domain boundaries
 - **SeldonVigil.Sdk** - Client SDK for integration
 - **SeldonVigil.Cli** - Command-line interface
 - **SeldonVigil.SharedKernel** - Cross-cutting concerns
-- **SeldonVigil.SourceGenerators** - Roslyn source generators
+- **SeldonVigil.SourceGenerators** - Roslyn source generator projects (scaffolding)
 
 ## Quick Start
 
@@ -23,7 +23,8 @@ SeldonVigil follows a modular monolith architecture with clear domain boundaries
 # Prerequisites: PostgreSQL 18+ running locally (localhost:5432)
 
 # Start everything (Redpanda, Prometheus, the API, workers and the web UI)
-docker compose -f infrastructure/docker/docker-compose.yml up -d
+# --project-name keeps the container and volume names stable (seldonvigil-*)
+docker compose --project-name seldonvigil -f infrastructure/docker/docker-compose.yml up -d
 
 # Open the web UI at http://localhost
 
@@ -55,6 +56,40 @@ Docker Compose setup, resource sizing, and the deployment checklist.
 | AIReasoning | Intelligent analysis |
 | Analytics | Data processing & insights |
 | Integration | Third-party connectors |
+| Domain | Agent runtime: prompts, memory, tool orchestration, model routing |
+| Messaging | Broker administration: topics, consumer groups, dead-letter routing |
+
+## Screenshots
+
+The application running from the Docker Compose stack with seeded demo data.
+
+**Dashboard** — live agent, trace, security and cost metrics.
+
+![Dashboard](docs/images/dashboard.png)
+
+**Trace Explorer** — hierarchical execution tracing across agents, tools and LLM calls.
+
+![Trace Explorer](docs/images/traces.png)
+
+**Cost Intelligence** — spend against budget, with a daily trend and breakdowns by model and agent.
+
+![Cost Intelligence](docs/images/costs-trend.png)
+
+**Security** — policy violations with severity, source and status.
+
+![Security](docs/images/security.png)
+
+**Certification** — agent certification pipelines and their approval stages.
+
+![Certification](docs/images/certification.png)
+
+**Broker** — Redpanda topic and consumer-group health.
+
+![Broker](docs/images/broker.png)
+
+Further views: [agents](docs/images/agents.png), [governance](docs/images/governance.png),
+[dashboard cost trend](docs/images/dashboard-cost-trend.png), [costs](docs/images/costs.png)
+and [AI reasoning](docs/images/ai-reasoning.png).
 
 ## Development
 

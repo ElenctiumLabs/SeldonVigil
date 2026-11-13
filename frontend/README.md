@@ -35,8 +35,7 @@ frontend/
 │   ├── components/        # React components
 │   │   ├── charts/       # Chart components (CostTrendChart)
 │   │   ├── layout/       # Layout components (DashboardLayout, Sidebar, Header)
-│   │   ├── tables/       # Table components (TracesTable)
-│   │   ├── trace/        # Trace visualization components
+│   │   ├── trace/        # Trace visualization components (TraceTree)
 │   │   └── ui/           # Reusable UI components (Button, Card, Input, Skeleton)
 │   ├── hooks/            # Custom React hooks (useApi)
 │   ├── lib/              # Utility functions
@@ -74,16 +73,11 @@ frontend/
 
 ## 📡 API Integration
 
-### Environment Variables
+### API base URL
 
-Create a `.env` file in the frontend directory (Vite uses the VITE_ prefix):
-
-```bash
-VITE_API_URL=http://localhost:5000/api
-VITE_ENABLE_TRACES=true
-VITE_ENABLE_SECURITY=true
-VITE_ENABLE_COSTS=true
-```
+The API base is a relative path (`/api/v1`), so one build works both behind the nginx
+proxy in the container and behind the Vite dev proxy locally. No environment variable
+is required.
 
 ### API Hooks
 
@@ -105,7 +99,7 @@ Available hooks:
 
 ## 📦 Proxying API Requests
 
-During development, API requests are automatically proxied to the backend via Vite's proxy configuration. Requests to `/api/*` are forwarded to `http://localhost:5000/api/*`.
+During development, API requests are automatically proxied to the backend via Vite's proxy configuration. Requests to `/api/*` are forwarded to `http://localhost:8080/api/*`.
 
 To change the backend URL, update `vite.config.ts`:
 
@@ -113,7 +107,7 @@ To change the backend URL, update `vite.config.ts`:
 server: {
   proxy: {
 	'/api': {
-	  target: 'http://your-backend-url:5000',
+	  target: 'http://your-backend-url:8080',
 	  // ...
 	}
   }
@@ -141,9 +135,6 @@ server: {
 #### Charts
 - **CostTrendChart** - Displays cost trends over time with budget reference lines
 
-#### Tables
-- **TracesTable** - Displays list of traces with inline selection
-
 #### Trace Visualization
 - **TraceTree** - Visual representation of trace decision trees
 
@@ -164,7 +155,7 @@ To fetch a token and save it locally you can use the included PowerShell helper:
 From the `frontend` directory run:
 
 ```powershell
-./scripts/fetch-dev-token.ps1 -Url https://localhost:61993 -Hours 2 -Role User -Sub test-user
+./scripts/fetch-dev-token.ps1 -Url http://localhost:8080 -Hours 2 -Role admin -Sub test-user
 ```
 
 The script saves the token to `frontend/.devtoken` and prints a curl example. Use the token as the `Authorization: Bearer <token>` header when calling the API during local development.
