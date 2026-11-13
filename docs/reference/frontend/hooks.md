@@ -6,7 +6,7 @@
 | `useApi` | `hooks/useApi.ts` | All API calls via TanStack Query; axios with Bearer interceptor |
 | `useTheme` | `hooks/useTheme.tsx` | Dark/light theme context |
 | `useThemeCustomizer` | `hooks/useThemeCustomizer.tsx` | Extended theme customisation |
-| `useLayout` | `hooks/useLayout.tsx` | Sidebar open/close state |
+| `useLayout` | `hooks/useLayout.tsx` | Layout picker selection, persisted to localStorage |
 
 ## API hook examples
 

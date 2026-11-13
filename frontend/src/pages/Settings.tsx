@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
@@ -22,6 +21,16 @@ const LAYOUT_ICONS: Record<LayoutId, React.ReactNode> = {
   'command-center': <Command size={20} />,
   'floating-overlay': <Maximize2 size={20} />,
   'editorial': <LayoutGrid size={20} />,
+}
+
+// Marks a control that is displayed but not yet wired up. Without this, an inert
+// input reads as a working one and the page promises something it does not do.
+function ComingSoon() {
+  return (
+    <span className="ml-2 rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+      Coming soon
+    </span>
+  )
 }
 
 export function SettingsPage() {
@@ -132,7 +141,7 @@ export function SettingsPage() {
               <div className="stat-icon-container flex-shrink-0">
                 <Globe size={22} strokeWidth={1.5} className="text-emerald-400" />
               </div>
-              <CardTitle className="font-display">Appearance</CardTitle>
+              <CardTitle className="font-display flex items-center">Appearance <ComingSoon /></CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -141,6 +150,7 @@ export function SettingsPage() {
               <Select
                 value={theme}
                 onValueChange={(val) => setTheme(val as 'light' | 'dark' | 'system')}
+                disabled
                 options={[
                   { value: 'light', label: 'Light' },
                   { value: 'dark', label: 'Dark' },
@@ -159,7 +169,7 @@ export function SettingsPage() {
               <div className="stat-icon-container flex-shrink-0">
                 <Bell size={22} strokeWidth={1.5} className="text-emerald-400" />
               </div>
-              <CardTitle className="font-display">Notifications</CardTitle>
+              <CardTitle className="font-display flex items-center">Notifications <ComingSoon /></CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -170,6 +180,7 @@ export function SettingsPage() {
               </div>
               <Switch 
                 id="email-notifications" 
+                disabled
                 checked={notifications.email}
                 onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, email: checked as boolean }))}
               />
@@ -181,6 +192,7 @@ export function SettingsPage() {
               </div>
               <Switch 
                 id="slack-notifications" 
+                disabled
                 checked={notifications.slack}
                 onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, slack: checked }))}
               />
@@ -192,6 +204,7 @@ export function SettingsPage() {
               </div>
               <Switch 
                 id="security-alerts" 
+                disabled
                 checked={notifications.securityAlerts}
                 onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, securityAlerts: checked }))}
               />
@@ -203,6 +216,7 @@ export function SettingsPage() {
               </div>
               <Switch 
                 id="cost-alerts" 
+                disabled
                 checked={notifications.costAlerts}
                 onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, costAlerts: checked }))}
               />
@@ -217,14 +231,15 @@ export function SettingsPage() {
               <div className="stat-icon-container flex-shrink-0">
                 <DollarSign size={22} strokeWidth={1.5} className="text-emerald-400" />
               </div>
-              <CardTitle className="font-display">Budget & Costs</CardTitle>
+              <CardTitle className="font-display flex items-center">Budget & Costs <ComingSoon /></CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="monthly-limit">Monthly Budget Limit (\u00A3)</Label>
+              <Label htmlFor="monthly-limit">Monthly Budget Limit (£)</Label>
               <Input
                 id="monthly-limit"
+                disabled
                 type="number"
                 defaultValue={settings?.budget.monthlyLimit || 5000}
                 placeholder="5000"
@@ -237,6 +252,7 @@ export function SettingsPage() {
               </div>
               <Switch 
                 id="budget-alerts" 
+                disabled
                 checked={budgetAlerts}
                 onCheckedChange={setBudgetAlerts}
               />
@@ -251,7 +267,7 @@ export function SettingsPage() {
               <div className="stat-icon-container flex-shrink-0">
                 <SettingsIcon size={22} strokeWidth={1.5} className="text-emerald-400" />
               </div>
-              <CardTitle className="font-display">API Configuration</CardTitle>
+              <CardTitle className="font-display flex items-center">API Configuration <ComingSoon /></CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -259,6 +275,7 @@ export function SettingsPage() {
               <Label htmlFor="polling-interval">Polling Interval (ms)</Label>
               <Input
                 id="polling-interval"
+                disabled
                 type="number"
                 defaultValue={settings?.api.pollingInterval || 30000}
                 placeholder="30000"
@@ -268,6 +285,7 @@ export function SettingsPage() {
               <Label htmlFor="timeout">Request Timeout (ms)</Label>
               <Input
                 id="timeout"
+                disabled
                 type="number"
                 defaultValue={settings?.api.timeout || 10000}
                 placeholder="10000"
@@ -277,9 +295,11 @@ export function SettingsPage() {
         </Card>
       </div>
 
-      {/* Save Button */}
+      {/* Read-only note. These settings come from the server; editing is not wired up yet. */}
       <div className="flex justify-end">
-        <Button className="rounded-xl">Save Changes</Button>
+        <p className="text-sm text-muted-foreground">
+          Settings are read from the server. Editing is coming soon; layout is stored in your browser.
+        </p>
       </div>
     </div>
   )
