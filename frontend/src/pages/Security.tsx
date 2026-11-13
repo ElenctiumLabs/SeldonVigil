@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { PageLoader } from '@/components/ui/page-loader'
 import { useSecurityViolations, type SecurityViolation } from '@/hooks/useApi'
+import { SecurityPolicies } from '@/components/security-policies'
 import { cn } from '@/lib/utils'
 import { FadeIn } from '@/components/ui/animations'
 
@@ -57,6 +58,7 @@ export function SecurityPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedViolation, setSelectedViolation] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'all' | 'critical' | 'open' | 'resolved'>('all')
+  const [section, setSection] = useState<'violations' | 'policies'>('violations')
 
   // Fetch security violations from API
   const { data: apiViolations, isLoading, error } = useSecurityViolations()
@@ -206,127 +208,141 @@ export function SecurityPage() {
         </div>
       </FadeIn>
 
-      {/* Stats Grid */}
-      <FadeIn delay={0.1}>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: 'Critical Alerts', value: criticalCount, icon: ShieldAlert },
-            { label: 'Open Issues', value: openCount, icon: AlertTriangle },
-            { label: 'High Severity', value: highCount, icon: Shield },
-            { label: 'Resolved Today', value: resolvedCount, icon: CheckCircle2 },
-          ].map(stat => (
-            <div key={stat.label} className="stat-card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-display font-bold mt-1">{stat.value}</p>
-                </div>
-                <div className="stat-icon-container flex-shrink-0">
-                  <stat.icon size={22} strokeWidth={1.5} className="text-emerald-400" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </FadeIn>
-
-      {/* Search & Filter */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search violations..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-10 bg-muted/50 border-0 focus-visible:bg-background rounded-xl"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="rounded-xl h-10">
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
-        </div>
-      </div>
-
-      {/* Tabs + Table */}
-      <Tabs defaultValue="all" value={activeTab} onValueChange={(v) => setActiveTab(v as 'all' | 'critical' | 'open' | 'resolved')}>
+      <Tabs defaultValue="violations" value={section} onValueChange={(v) => setSection(v as 'violations' | 'policies')}>
         <TabsList>
-          <TabsTrigger value="all">All Violations</TabsTrigger>
-          <TabsTrigger value="critical">Critical</TabsTrigger>
-          <TabsTrigger value="open">Open</TabsTrigger>
-          <TabsTrigger value="resolved">Resolved</TabsTrigger>
+          <TabsTrigger value="violations">Violations</TabsTrigger>
+          <TabsTrigger value="policies">Policies</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all">
-          <DataTable
-            data={filteredViolations}
-            columns={columns}
-            keyExtractor={(v) => v.id}
-            pageSize={8}
-            onRowClick={(v) => setSelectedViolation(v.id === selectedViolation ? null : v.id)}
-            selectedKey={selectedViolation}
-          />
+        <TabsContent value="violations">
+        {/* Stats Grid */}
+        <FadeIn delay={0.1}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: 'Critical Alerts', value: criticalCount, icon: ShieldAlert },
+              { label: 'Open Issues', value: openCount, icon: AlertTriangle },
+              { label: 'High Severity', value: highCount, icon: Shield },
+              { label: 'Resolved Today', value: resolvedCount, icon: CheckCircle2 },
+            ].map(stat => (
+              <div key={stat.label} className="stat-card">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                    <p className="text-2xl font-display font-bold mt-1">{stat.value}</p>
+                  </div>
+                  <div className="stat-icon-container flex-shrink-0">
+                    <stat.icon size={22} strokeWidth={1.5} className="text-emerald-400" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </FadeIn>
+
+        {/* Search & Filter */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="relative flex-1 max-w-md w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search violations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-10 bg-muted/50 border-0 focus-visible:bg-background rounded-xl"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="rounded-xl h-10">
+              <Filter className="h-4 w-4 mr-2" />
+              Filters
+            </Button>
+          </div>
+        </div>
+
+        {/* Tabs + Table */}
+        <Tabs defaultValue="all" value={activeTab} onValueChange={(v) => setActiveTab(v as 'all' | 'critical' | 'open' | 'resolved')}>
+          <TabsList>
+            <TabsTrigger value="all">All Violations</TabsTrigger>
+            <TabsTrigger value="critical">Critical</TabsTrigger>
+            <TabsTrigger value="open">Open</TabsTrigger>
+            <TabsTrigger value="resolved">Resolved</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all">
+            <DataTable
+              data={filteredViolations}
+              columns={columns}
+              keyExtractor={(v) => v.id}
+              pageSize={8}
+              onRowClick={(v) => setSelectedViolation(v.id === selectedViolation ? null : v.id)}
+              selectedKey={selectedViolation}
+            />
+          </TabsContent>
+          <TabsContent value="critical">
+            <DataTable
+              data={filteredViolations}
+              columns={columns}
+              keyExtractor={(v) => v.id}
+              pageSize={8}
+              onRowClick={(v) => setSelectedViolation(v.id === selectedViolation ? null : v.id)}
+              selectedKey={selectedViolation}
+            />
+          </TabsContent>
+          <TabsContent value="open">
+            <DataTable
+              data={filteredViolations}
+              columns={columns}
+              keyExtractor={(v) => v.id}
+              pageSize={8}
+              onRowClick={(v) => setSelectedViolation(v.id === selectedViolation ? null : v.id)}
+              selectedKey={selectedViolation}
+            />
+          </TabsContent>
+          <TabsContent value="resolved">
+            <DataTable
+              data={filteredViolations}
+              columns={columns}
+              keyExtractor={(v) => v.id}
+              pageSize={8}
+              onRowClick={(v) => setSelectedViolation(v.id === selectedViolation ? null : v.id)}
+              selectedKey={selectedViolation}
+            />
+          </TabsContent>
+        </Tabs>
+
+        {/* Detail Panel */}
+        {selectedData && (
+          <Card className="rounded-2xl border-border shadow-sm animate-fade-in">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold">{selectedData.id}: {selectedData.type}</CardTitle>
+                <Badge variant={severityConfig[selectedData.severity as Violation['severity']].variant}>{selectedData.severity}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: 'Description', value: selectedData.description, fullWidth: true },
+                  { label: 'Source', value: selectedData.source },
+                  { label: 'Status', value: <Badge variant={statusConfig[selectedData.status as Violation['status']].variant}>{selectedData.status}</Badge> },
+                  { label: 'Detected', value: new Date(selectedData.createdAt).toLocaleString() },
+                  { label: 'Type', value: selectedData.type },
+                ].map(detail => (
+                  <div key={detail.label} className={cn('p-3 rounded-xl bg-muted/30', detail.fullWidth && 'col-span-full')}>
+                    <dt className="text-xs font-medium text-muted-foreground mb-1">{detail.label}</dt>
+                    <dd className="text-sm font-medium text-foreground">{detail.value}</dd>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         </TabsContent>
-        <TabsContent value="critical">
-          <DataTable
-            data={filteredViolations}
-            columns={columns}
-            keyExtractor={(v) => v.id}
-            pageSize={8}
-            onRowClick={(v) => setSelectedViolation(v.id === selectedViolation ? null : v.id)}
-            selectedKey={selectedViolation}
-          />
-        </TabsContent>
-        <TabsContent value="open">
-          <DataTable
-            data={filteredViolations}
-            columns={columns}
-            keyExtractor={(v) => v.id}
-            pageSize={8}
-            onRowClick={(v) => setSelectedViolation(v.id === selectedViolation ? null : v.id)}
-            selectedKey={selectedViolation}
-          />
-        </TabsContent>
-        <TabsContent value="resolved">
-          <DataTable
-            data={filteredViolations}
-            columns={columns}
-            keyExtractor={(v) => v.id}
-            pageSize={8}
-            onRowClick={(v) => setSelectedViolation(v.id === selectedViolation ? null : v.id)}
-            selectedKey={selectedViolation}
-          />
+
+        <TabsContent value="policies">
+          <SecurityPolicies />
         </TabsContent>
       </Tabs>
-
-      {/* Detail Panel */}
-      {selectedData && (
-        <Card className="rounded-2xl border-border shadow-sm animate-fade-in">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">{selectedData.id}: {selectedData.type}</CardTitle>
-              <Badge variant={severityConfig[selectedData.severity as Violation['severity']].variant}>{selectedData.severity}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { label: 'Description', value: selectedData.description, fullWidth: true },
-                { label: 'Source', value: selectedData.source },
-                { label: 'Status', value: <Badge variant={statusConfig[selectedData.status as Violation['status']].variant}>{selectedData.status}</Badge> },
-                { label: 'Detected', value: new Date(selectedData.createdAt).toLocaleString() },
-                { label: 'Type', value: selectedData.type },
-              ].map(detail => (
-                <div key={detail.label} className={cn('p-3 rounded-xl bg-muted/30', detail.fullWidth && 'col-span-full')}>
-                  <dt className="text-xs font-medium text-muted-foreground mb-1">{detail.label}</dt>
-                  <dd className="text-sm font-medium text-foreground">{detail.value}</dd>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

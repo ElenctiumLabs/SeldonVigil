@@ -957,12 +957,77 @@ export function useSecurityDashboard() {
   })
 }
 
+export interface SecurityRuleDefinition {
+  type: string
+  expression: string
+  parameters?: Record<string, unknown>
+}
+
+export interface SecurityPolicy {
+  // The backend value object serializes as { value }, but older payloads sent a bare
+  // string; both are handled so the UI does not break on either shape.
+  id: { value: string } | string
+  name: string
+  description?: string
+  category: string
+  severity: string
+  status: string
+  ruleDefinition?: SecurityRuleDefinition
+  autoResponse?: string | null
+  createdAt: string
+  updatedAt?: string
+}
+
+export function securityPolicyId(policy: SecurityPolicy): string {
+  return typeof policy.id === 'string' ? policy.id : policy.id.value
+}
+
 export function useSecurityPolicies() {
   return useQuery({
     queryKey: ['securityPolicies'],
     queryFn: async () => {
-      const response = await apiClient.get('/security/policies')
+      // The endpoint returns a PaginatedResult ({ items, totalCount, ... }),
+      // not a bare array.
+      const response = await apiClient.get<{ items: SecurityPolicy[] }>('/security/policies')
+      return response.data?.items ?? []
+    },
+  })
+}
+
+export interface CreateSecurityPolicyInput {
+  name: string
+  description: string
+  category: string
+  severity: string
+  ruleDefinition: SecurityRuleDefinition
+  autoResponse?: string | null
+}
+
+export function useCreateSecurityPolicy() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: CreateSecurityPolicyInput) => {
+      const response = await apiClient.post<SecurityPolicy>('/security/policies', input)
       return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['securityPolicies'] })
+      queryClient.invalidateQueries({ queryKey: ['securityViolations'] })
+    },
+  })
+}
+
+export function useDisableSecurityPolicy() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    // The backend names this route "DisableSecurityPolicy"; it sets the status to
+    // Disabled rather than removing the row.
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/security/policies/${id}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['securityPolicies'] })
+      queryClient.invalidateQueries({ queryKey: ['securityViolations'] })
     },
   })
 }
