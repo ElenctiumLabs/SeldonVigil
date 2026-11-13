@@ -687,11 +687,12 @@ export function useCertificationPipelines(agentId?: string) {
   return useQuery({
     queryKey: ['certificationPipelines', agentId],
     queryFn: async () => {
-      if (agentId) {
-        const response = await apiClient.get<CertificationPipeline[]>(`/governance/certification/agent/${agentId}`)
-        return response.data
-      }
-      return [] as CertificationPipeline[]
+      // Without an agent, list the tenant's pipelines; with one, list that agent's.
+      const path = agentId
+        ? `/governance/certification/agent/${agentId}`
+        : '/governance/certification'
+      const response = await apiClient.get<CertificationPipeline[]>(path)
+      return response.data
     },
     enabled: true,
   })
