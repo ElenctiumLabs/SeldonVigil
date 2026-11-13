@@ -31,6 +31,7 @@ export function GovernancePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState<'all' | 'draft' | 'active' | 'deprecated'>('all')
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   const [newPolicy, setNewPolicy] = useState({ name: '', description: '', category: 'Security', definitionYaml: 'rules:\n  - name: default\n    action: allow' })
 
   const filtered = (policies ?? []).filter(p => {
@@ -159,11 +160,56 @@ export function GovernancePage() {
                           Activate
                         </Button>
                       )}
-                      <Button size="sm" variant="outline">
-                        <FileText className="w-4 h-4 mr-1" /> View
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setExpandedId(expandedId === policy.id ? null : policy.id)}
+                      >
+                        <FileText className="w-4 h-4 mr-1" />
+                        {expandedId === policy.id ? 'Hide' : 'View'}
                       </Button>
                     </div>
                   </div>
+
+                  {expandedId === policy.id && (
+                    <div className="mt-4 space-y-4 border-t border-border pt-4">
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">
+                          Definition (YAML)
+                        </p>
+                        <pre className="max-h-72 overflow-auto rounded-xl bg-muted/40 p-3 text-xs font-mono">
+                          {policy.definitionYaml || 'No definition recorded'}
+                        </pre>
+                      </div>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div>
+                          <p className="text-muted-foreground">Version</p>
+                          <p className="font-medium">v{policy.version}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Created</p>
+                          <p className="font-medium">{new Date(policy.createdAt).toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Activated</p>
+                          <p className="font-medium">
+                            {policy.activatedAt ? new Date(policy.activatedAt).toLocaleString() : 'Not activated'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Deprecated</p>
+                          <p className="font-medium">
+                            {policy.deprecatedAt ? new Date(policy.deprecatedAt).toLocaleString() : 'No'}
+                          </p>
+                        </div>
+                      </div>
+                      {policy.previousVersionId && (
+                        <p className="text-xs text-muted-foreground">
+                          Previous version: <span className="font-mono">{policy.previousVersionId}</span>
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
