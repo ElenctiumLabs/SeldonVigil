@@ -46,9 +46,12 @@ internal sealed class ListSecurityPoliciesQueryHandler(
                 p.Name,
                 p.Description,
                 p.Category.ToString(),
+                p.RuleDefinition,
                 p.Status.ToString(),
                 p.Severity.ToString(),
-                p.CreatedAt))
+                p.AutoResponse?.ToString(),
+                p.CreatedAt,
+                p.UpdatedAt))
             .ToList();
 
         var result = new PaginatedResult<SecurityPolicyListItemDto>(

@@ -5,7 +5,11 @@ namespace SeldonVigil.Api.Modules.Security.Api.Endpoints;
 internal sealed record SecurityPolicyListItemDto(
     SecurityPolicyId Id,
     string Name,
+    string Description,
     string Category,
+    RuleDefinition RuleDefinition,
     string Severity,
+    string? AutoResponse,
     string Status,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    DateTime UpdatedAt);

@@ -7,6 +7,9 @@ internal sealed record SecurityPolicyListItemDto(
     string Name,
     string Description,
     string Category,
+    RuleDefinition RuleDefinition,
     string Status,
     string Severity,
-    DateTime CreatedAt);
+    string? AutoResponse,
+    DateTime CreatedAt,
+    DateTime UpdatedAt);
