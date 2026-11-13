@@ -31,7 +31,7 @@ SeldonVigil follows a modular monolith architecture with clear domain boundaries
 - **SeldonVigil.Sdk** - .NET client SDK for application integration
 - **SeldonVigil.Cli** - Command-line interface for administrative tasks
 - **SeldonVigil.SharedKernel** - Shared domain logic and infrastructure
-- **SeldonVigil.SourceGenerators** - Roslyn source generators for compile-time optimizations
+- **SeldonVigil.SourceGenerators** - Roslyn source generator projects (scaffolding; no generators are implemented yet)
 
 ### Core Modules
 
@@ -41,10 +41,12 @@ SeldonVigil follows a modular monolith architecture with clear domain boundaries
 | **Observability** | Tracing, metrics, logging | OpenTelemetry integration, distributed tracing, structured logging |
 | **CostIntelligence** | Cloud cost optimization | Budget tracking, spend analysis, alert thresholds, cost optimization recommendations |
 | **Security** | Threat detection & posture | Policy evaluation, threat detection, automated responses, compliance monitoring |
-| **Governance** | Policy enforcement & compliance | Policy lifecycle management, audit trails, compliance reporting |
+| **Governance** | Policy enforcement & compliance | Policy lifecycle management and certification pipelines |
 | **AIReasoning** | Intelligent analysis | Root cause analysis, anomaly detection, predictive insights |
 | **Analytics** | Data processing & insights | Custom dashboards, trend analysis, reporting |
 | **Integration** | Third-party connectors | Extensible integration framework for external systems |
+| **Domain** | Application settings | Server-side settings types and the settings endpoint |
+| **Messaging** | Broker administration | Broker status, topics, consumer groups and message inspection |
 
 ---
 
@@ -348,21 +350,22 @@ Copy the returned `token` value.
 ### 4. Create Your First Agent
 
 ```bash
-curl -X POST "http://localhost:8080/api/agents" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+curl -X POST "http://localhost:8080/api/v1/agents" \
+  -H "Authorization: Bearer ***" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "My First Agent",
     "description": "A test agent",
-    "type": "Chat",
-    "capabilities": ["text-generation", "code-generation"]
+    "framework": "SemanticKernel",
+    "modelProvider": "OpenAI",
+    "modelName": "gpt-4"
   }'
 ```
 
 ### 5. Ingest a Trace
 
 ```bash
-curl -X POST "http://localhost:8080/api/observability/traces" \
+curl -X POST "http://localhost:8080/api/v1/observability/traces" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -423,14 +426,18 @@ curl -X POST "http://localhost:8080/api/observability/traces" \
 
 1. **Create Cost Budgets**
    ```bash
-   curl -X POST "http://localhost:8080/api/cost/budgets" \
-     -H "Authorization: Bearer YOUR_TOKEN" \
+   curl -X POST "http://localhost:8080/api/v1/costs/budgets" \
+     -H "Authorization: Bearer ***" \
      -H "Content-Type: application/json" \
      -d '{
        "name": "Monthly Production Budget",
-       "budgetAmount": {"amount": 1000, "currency": "USD"},
+       "scopeType": "Tenant",
+       "scopeId": "11111111-1111-1111-1111-111111111111",
+       "amount": 1000,
+       "currency": "USD",
        "period": "Monthly",
-       "alertThresholds": [0.5, 0.75, 0.9]
+       "alertThresholds": [0.5, 0.75, 0.9],
+       "enforcementType": "Soft"
      }'
    ```
 
@@ -458,26 +465,14 @@ curl -X POST "http://localhost:8080/api/observability/traces" \
 
 1. **Define Security Policies**
    ```bash
-   curl -X POST "http://localhost:8080/api/security/policies" \
-     -H "Authorization: Bearer YOUR_TOKEN" \
+   curl -X POST "http://localhost:8080/api/v1/security/policies" \
+     -H "Authorization: Bearer ***" \
      -H "Content-Type: application/json" \
      -d '{
        "name": "PII Detection Policy",
        "description": "Detect PII in agent outputs",
        "category": "DataProtection",
-       "rules": [
-         {
-           "metric": "output_text",
-           "operator": "contains",
-           "value": "ssn_pattern",
-           "threshold": 1
-         }
-       ],
-       "severity": "High",
-       "autoResponse": {
-         "action": "Block",
-         "notify": ["security-team"]
-       }
+       "definitionYaml": "rules:\n  - metric: output_text\n    operator: contains\n    value: ssn_pattern\n    threshold: 1"
      }'
    ```
 
@@ -487,7 +482,7 @@ curl -X POST "http://localhost:8080/api/observability/traces" \
 
 3. **Monitor Policy Violations**
    - View security metrics in Prometheus
-   - Review violation logs and audit trails
+   - Review violation logs and policy history
 
 4. **Respond to Incidents**
    - Automated responses trigger based on policy configuration
@@ -508,8 +503,8 @@ curl -X POST "http://localhost:8080/api/observability/traces" \
 
 2. **Trigger Analysis**
    ```bash
-   curl -X POST "http://localhost:8080/api/ai-reasoning/root-cause" \
-     -H "Authorization: Bearer YOUR_TOKEN" \
+   curl -X POST "http://localhost:8080/api/v1/ai-reasoning/root-cause-analysis" \
+     -H "Authorization: Bearer ***" \
      -H "Content-Type: application/json" \
      -d '{
        "incidentId": "INCIDENT_ID",
@@ -531,43 +526,39 @@ curl -X POST "http://localhost:8080/api/observability/traces" \
 
 **Expected Outcome:** Faster incident resolution with AI-powered insights.
 
-### Scenario 5: Multi-Tenant Governance
+### Scenario 5: Multi-Tenant Isolation
 
-**Objective:** Manage multiple tenants with different governance requirements.
+**Objective:** Keep each tenant's agents, traces and policies separate.
+
+**How it works:**
+
+Every request is scoped to a tenant, resolved in this order:
+
+1. The `tenant_id` claim in the JWT (trusted; wins over anything client-supplied)
+2. The `X-Tenant-ID` header or subdomain, for pre-authentication flows such as login
+3. A development default tenant, when nothing is supplied in Development
+
+With no tenant resolved, the global query filters match no rows, so the request sees an
+empty result set rather than another tenant's data.
 
 **Steps:**
 
-1. **Create Tenants**
-   ```bash
-   curl -X POST "http://localhost:8080/api/tenants" \
-     -H "Authorization: Bearer YOUR_TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "name": "Acme Corp",
-       "domain": "acme.com",
-       "settings": {
-         "complianceLevel": "SOC2",
-         "dataResidency": "US"
-       }
-     }'
-   ```
+1. **Issue a token for a tenant**
+   Include the tenant in the token's `tenant_id` claim. In Development, the
+   `/dev/token` endpoint issues a token for the default tenant.
 
-2. **Configure Tenant-Specific Policies**
-   - Apply security policies per tenant
-   - Set cost budgets per tenant
-   - Configure retention policies
+2. **Create tenant-scoped resources**
+   Register agents and create policies and budgets as that tenant; each row carries the
+   tenant from the request context.
 
-3. **Monitor Tenant Activity**
-   - View tenant-specific dashboards
-   - Generate compliance reports
-   - Audit tenant access
+3. **Verify isolation**
+   Query agents, traces, violations and budgets with a second tenant's token. Each tenant
+   sees only its own rows.
 
-4. **Manage Tenant Lifecycle**
-   - Onboard new tenants
-   - Offboard terminated tenants
-   - Migrate tenant data
+**Expected Outcome:** Isolated tenants with no cross-tenant reads.
 
-**Expected Outcome:** Isolated multi-tenant environment with per-tenant governance.
+There is no tenant CRUD endpoint. Tenants are established by the issued token, not created
+through the API.
 
 ---
 
@@ -586,7 +577,7 @@ GET /dev/token?role=Administrator&hours=24
 #### Authenticate with Provider (Production)
 
 ```bash
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -614,58 +605,47 @@ Authorization: Bearer YOUR_TOKEN
 #### Create Agent
 
 ```bash
-POST /api/agents
+POST /api/v1/agents
 Content-Type: application/json
 
 {
   "name": "Customer Support Bot",
   "description": "Handles customer inquiries",
-  "type": "Chat",
-  "capabilities": ["text-generation", "sentiment-analysis"],
-  "configuration": {
-    "model": "gpt-4",
-    "temperature": 0.7,
-    "maxTokens": 1000
-  }
+  "framework": "SemanticKernel",
+  "modelProvider": "OpenAI",
+  "modelName": "gpt-4"
 }
 ```
 
 #### List Agents
 
 ```bash
-GET /api/agents?page=1&pageSize=20
+GET /api/v1/agents
 ```
 
 #### Get Agent Details
 
 ```bash
-GET /api/agents/{agentId}
+GET /api/v1/agents/{agentId}
 ```
 
-#### Update Agent
+#### Activate, Suspend or Revoke an Agent
 
 ```bash
-PUT /api/agents/{agentId}
-Content-Type: application/json
-
-{
-  "name": "Updated Name",
-  "status": "Active"
-}
+POST /api/v1/agents/{agentId}/activate
+POST /api/v1/agents/{agentId}/suspend
+POST /api/v1/agents/{agentId}/revoke
 ```
 
-#### Suspend Agent
-
-```bash
-POST /api/agents/{agentId}/suspend
-```
+There is no agent update endpoint. An agent is registered, then activated, suspended
+or revoked; its manifest is set at registration.
 
 ### Observability
 
 #### Ingest Trace
 
 ```bash
-POST /api/observability/traces
+POST /api/v1/observability/traces
 Content-Type: application/json
 
 {
@@ -698,13 +678,13 @@ Content-Type: application/json
 #### Query Traces
 
 ```bash
-GET /api/observability/traces?agentId={agentId}&from=2024-01-01&to=2024-01-02
+GET /api/v1/observability/traces?agentId={agentId}&from=2024-01-01&to=2024-01-02
 ```
 
 #### Get Trace by ID
 
 ```bash
-GET /api/observability/traces/{traceId}
+GET /api/v1/observability/traces/{traceId}
 ```
 
 ### Cost Intelligence
@@ -712,133 +692,127 @@ GET /api/observability/traces/{traceId}
 #### Create Budget
 
 ```bash
-POST /api/cost/budgets
+POST /api/v1/costs/budgets
 Content-Type: application/json
 
 {
   "name": "Monthly Budget",
-  "budgetAmount": {
-    "amount": 1000,
-    "currency": "USD"
-  },
+  "scopeType": "Agent",
+  "scopeId": "11111111-1111-1111-1111-111111111111",
+  "amount": 1000,
+  "currency": "USD",
   "period": "Monthly",
   "alertThresholds": [0.5, 0.75, 0.9],
-  "agentId": "agent-id"
+  "enforcementType": "Soft"
 }
 ```
 
-#### Record Spend
+`scopeType` is one of Tenant, Team, Project or Agent. `period` is one of Daily, Weekly,
+Monthly, Quarterly or Annual. `enforcementType` is Soft (signal only) or Hard.
+
+#### List Budgets
 
 ```bash
-POST /api/cost/spend
-Content-Type: application/json
-
-{
-  "agentId": "agent-id",
-  "amount": {
-    "amount": 0.01,
-    "currency": "USD"
-  },
-  "operation": "text_generation"
-}
+GET /api/v1/costs/budgets
 ```
 
-#### Get Budget Status
+#### Cost Dashboard and Recommendations
 
 ```bash
-GET /api/cost/budgets/{budgetId}/status
+GET /api/v1/costs/dashboard
+GET /api/v1/costs/recommendations?agentId={agentId}
 ```
 
-#### Get Cost Recommendations
-
-```bash
-GET /api/cost/recommendations?agentId={agentId}
-```
+Spend is recorded by trace ingestion; there is no separate spend endpoint. Resetting a
+budget's spend counter is done through the CLI.
 
 ### Security
 
 #### Create Policy
 
 ```bash
-POST /api/security/policies
+POST /api/v1/security/policies
 Content-Type: application/json
 
 {
   "name": "Rate Limiting Policy",
   "description": "Limit requests per minute",
   "category": "RateLimiting",
-  "rules": [
-    {
-      "metric": "request_count",
-      "operator": "greater_than",
-      "value": 100,
-      "timeWindow": "00:01:00"
-    }
-  ],
-  "severity": "Medium",
-  "autoResponse": {
-    "action": "Throttle",
-    "parameters": {
-      "limit": 50
-    }
-  }
+  "definitionYaml": "rules:\n  - metric: request_count\n    operator: greater_than\n    value: 100\n    timeWindow: \"00:01:00\""
 }
 ```
 
-#### Evaluate Policy
+Policies are defined as YAML and evaluated against ingested traces.
+
+#### Evaluate Input Against Active Policies
 
 ```bash
-POST /api/security/policies/{policyId}/evaluate
+POST /api/v1/security/policies/evaluate-input
 Content-Type: application/json
 
 {
-  "traceId": "trace-id"
+  "input": "text to screen"
 }
 ```
 
 #### List Policies
 
 ```bash
-GET /api/security/policies?category=Security
+GET /api/v1/security/policies
 ```
+
+#### Update or Delete a Policy
+
+```bash
+PUT /api/v1/security/policies/{policyId}
+DELETE /api/v1/security/policies/{policyId}
+```
+
+Security policies are managed through these endpoints and through the CLI. The dashboard
+shows the violations they produce; it does not edit the policies.
 
 ### Governance
 
-#### Create Audit Log Entry
+Governance policies are defined as YAML, then activated. There is no separate audit-log or
+compliance-report endpoint; policy violations are reported through the Security module.
+
+#### Create a Policy
 
 ```bash
-POST /api/governance/audit
+POST /api/v1/governance/policies
 Content-Type: application/json
 
 {
-  "action": "AgentCreated",
-  "actor": "user-123",
-  "resource": "agent-456",
-  "details": {
-    "name": "New Agent"
-  }
+  "name": "Agent Onboarding Policy",
+  "description": "Requires certification before an agent receives production traffic",
+  "category": "Compliance",
+  "definitionYaml": "rules:\n  - ..."
 }
 ```
 
-#### Query Audit Logs
+#### Activate a Policy
 
 ```bash
-GET /api/governance/audit?actor={actorId}&from=2024-01-01&to=2024-01-02
+POST /api/v1/governance/policies/{policyId}/activate
 ```
 
-#### Generate Compliance Report
+#### List and Inspect Policies
 
 ```bash
-POST /api/governance/compliance/reports
-Content-Type: application/json
+GET /api/v1/governance/policies
+GET /api/v1/governance/policies/{policyId}
+```
 
-{
-  "standard": "SOC2",
-  "period": {
-    "from": "2024-01-01",
-    "to": "2024-01-31"
-  }
-}
+There is no deactivate route; activation is one-way.
+
+#### Certification Pipelines
+
+```bash
+POST /api/v1/governance/certification/trigger
+GET /api/v1/governance/certification
+GET /api/v1/governance/certification/agent/{agentId}
+GET /api/v1/governance/certification/{pipelineId}
+POST /api/v1/governance/certification/{pipelineId}/approve
 ```
 
 ---
@@ -847,9 +821,8 @@ Content-Type: application/json
 
 ### Installation
 
-```bash
-dotnet add package SeldonVigil.Sdk
-```
+The SDK project is `src/SeldonVigil.Sdk`. It is packaged as `SeldonVigil.Sdk` but is not
+yet published to nuget.org, so reference the project rather than the package.
 
 ### Configuration
 
@@ -859,20 +832,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
 
-// Add SeldonVigil SDK with API Key
-services.AddSeldonVigilSdkWithApiKey(options =>
-{
-    options.BaseUrl = "https://api.acme.example";
-    options.ApiKey = "your-api-key";
-});
+// API key authentication
+services.AddSeldonVigilSdkWithApiKey("your-api-key", "https://api.acme.example");
 
-// Or with OAuth2
-services.AddSeldonVigilSdkWithOAuth2(new Uri("https://auth.acme.example"), options =>
-{
-    options.BaseUrl = "https://api.acme.example";
-    options.ClientId = "your-client-id";
-    options.ClientSecret = "your-client-secret";
-});
+// Or OAuth2 client credentials
+services.AddSeldonVigilSdkWithOAuth2(
+    "your-client-id",
+    "your-client-secret",
+    "https://auth.acme.example",
+    scope: "seldonvigil",
+    baseUrl: "https://api.acme.example");
 
 var serviceProvider = services.BuildServiceProvider();
 ```
@@ -909,11 +878,12 @@ var trace = new SeldonVigilTrace
 await observabilityClient.IngestTraceAsync(trace);
 
 // Query traces
-var traces = await observabilityClient.QueryTracesAsync(
-    agentId: "agent-456",
-    from: DateTime.UtcNow.AddDays(-1),
-    to: DateTime.UtcNow
-);
+var traces = await observabilityClient.QueryTracesAsync(new TraceQuery
+{
+    AgentId = "agent-456",
+    StartTime = DateTime.UtcNow.AddDays(-1),
+    EndTime = DateTime.UtcNow
+});
 
 // Get trace by ID
 var trace = await observabilityClient.GetTraceAsync(traceId);
@@ -927,34 +897,23 @@ using SeldonVigil.Sdk.Security;
 var securityClient = serviceProvider.GetRequiredService<SecurityClient>();
 
 // Create a policy
-var policy = await securityClient.CreatePolicyAsync(new CreatePolicyRequest
+var policy = await securityClient.CreatePolicyAsync(new CreateSecurityPolicyRequest
 {
     Name = "PII Detection",
     Description = "Detect PII in outputs",
-    Category = PolicyCategory.DataProtection,
-    Rules = new List<PolicyRule>
-    {
-        new PolicyRule
-        {
-            Metric = "output_text",
-            Operator = "contains",
-            Value = "ssn_pattern",
-            Threshold = 1
-        }
-    },
-    Severity = Severity.High,
-    AutoResponse = new AutoResponse
-    {
-        Action = "Block",
-        Notify = new[] { "security-team" }
-    }
+    RuleDefinition = "rules:\n  - metric: output_text\n    operator: contains\n    value: ssn_pattern"
 });
 
-// Evaluate a trace against policies
-var result = await securityClient.EvaluatePolicyAsync(policyId, trace);
+// Evaluate input against active policies
+var result = await securityClient.EvaluatePolicyAsync(new PolicyEvaluation
+{
+    AgentId = "agent-id",
+    OperationType = "generate_text",
+    Input = new Dictionary<string, object> { ["text"] = "text to screen" }
+});
 
 // List policies
-var policies = await securityClient.GetPoliciesAsync();
+var policies = await securityClient.ListPoliciesAsync();
 ```
 
 ### Agent Client
@@ -964,28 +923,24 @@ using SeldonVigil.Sdk.Agents;
 
 var agentClient = serviceProvider.GetRequiredService<AgentClient>();
 
-// Create an agent
-var agent = await agentClient.CreateAgentAsync(new CreateAgentRequest
+// Register an agent
+var agent = await agentClient.RegisterAgentAsync(new CreateAgentRequest
 {
     Name = "Customer Support Bot",
     Description = "Handles customer inquiries",
-    Type = AgentType.Chat,
-    Capabilities = new[] { "text-generation", "sentiment-analysis" }
+    Framework = "SemanticKernel",
+    ModelProvider = "OpenAI",
+    ModelName = "gpt-4"
 });
 
 // List agents
 var agents = await agentClient.GetAgentsAsync();
 
 // Suspend an agent
-await agentClient.SuspendAgentAsync(agentId);
+await agentClient.SuspendAgentAsync(agentId, "Maintenance");
 
-// Update agent manifest
-await agentClient.UpdateAgentManifestAsync(agentId, new AgentManifest
-{
-    Model = "gpt-4",
-    Temperature = 0.7,
-    MaxTokens = 1000
-});
+// Revoke an agent
+await agentClient.RevokeAgentAsync(agentId, "Decommissioned");
 ```
 
 ### OpenTelemetry Integration
@@ -1014,129 +969,85 @@ var tracerProvider = builder.Build();
 
 ## CLI Usage
 
-### Installation
+### Running the CLI
 
-The CLI is distributed as a .NET tool:
+The CLI is an executable in this repository. Run it from the project directory:
 
 ```bash
-dotnet tool install --global SeldonVigil.Cli --version 1.0.0
+dotnet run --project src/SeldonVigil.Cli -- agent list
 ```
+
+It is packaged as a .NET tool (`PackAsTool`, command name `seldonvigil`), but the package
+is not yet published to nuget.org, so `dotnet tool install` will not resolve it.
 
 ### Authentication
 
 ```bash
-# Login with API key
-seldonvigil login --api-key YOUR_API_KEY
-
-# Login with OAuth2
-seldonvigil login --oauth2 --client-id YOUR_CLIENT_ID
+# Login with an API key
+seldonvigil auth login --api-key YOUR_API_KEY --url http://localhost:8080
 
 # Check current session
-seldonvigil whoami
+seldonvigil auth whoami
 
 # Logout
-seldonvigil logout
+seldonvigil auth logout
 ```
 
 ### Agent Commands
 
 ```bash
-# List all agents
 seldonvigil agent list
-
-# Get agent details
 seldonvigil agent get AGENT_ID
-
-# Create a new agent
-seldonvigil agent create \
-  --name "My Agent" \
-  --type Chat \
-  --capabilities text-generation,sentiment-analysis
-
-# Suspend an agent
-seldonvigil agent suspend AGENT_ID
-
-# Activate an agent
+seldonvigil agent create --name "My Agent" --framework SemanticKernel \
+  --model-provider OpenAI --model-name gpt-4
+seldonvigil agent suspend AGENT_ID --reason "Maintenance"
 seldonvigil agent activate AGENT_ID
-
-# Delete an agent
-seldonvigil agent delete AGENT_ID
+seldonvigil agent delete AGENT_ID --reason "Decommissioned"
 ```
 
 ### Policy Commands
 
+Security policies are YAML documents. The CLI can evaluate input against them.
+
 ```bash
-# List all policies
 seldonvigil policy list
-
-# Get policy details
 seldonvigil policy get POLICY_ID
-
-# Create a new policy
-seldonvigil policy create \
-  --name "Rate Limiting" \
-  --category RateLimiting \
-  --severity Medium \
-  --file policy.json
-
-# Activate a policy
-seldonvigil policy activate POLICY_ID
-
-# Deactivate a policy
-seldonvigil policy deactivate POLICY_ID
-
-# Delete a policy
-seldonvigil policy delete POLICY_ID
+seldonvigil policy create --name "Rate Limiting" --category RateLimiting \
+  --severity Medium --rule "request_count > 100"
+seldonvigil policy evaluate --input "text to screen"
+seldonvigil policy disable POLICY_ID --reason "Replaced"
 ```
 
 ### Budget Commands
 
 ```bash
-# List all budgets
 seldonvigil budget list
-
-# Get budget status
-seldonvigil budget status BUDGET_ID
-
-# Create a new budget
-seldonvigil budget create \
-  --name "Monthly Budget" \
-  --amount 1000 \
-  --currency USD \
-  --period Monthly \
-  --thresholds 0.5,0.75,0.9
-
-# Get cost recommendations
-seldonvigil budget recommendations --agent AGENT_ID
+seldonvigil budget create --name "Monthly Budget" --amount 1000 \
+  --currency USD --period Monthly
+seldonvigil budget reset --id BUDGET_ID
 ```
 
-### Observability Commands
+### Trace Commands
 
 ```bash
-# Query traces
-seldonvigil observability traces \
-  --agent AGENT_ID \
-  --from 2024-01-01 \
-  --to 2024-01-02
+seldonvigil trace list --agent AGENT_ID --from 2024-01-01 --to 2024-01-02
+seldonvigil trace get TRACE_ID
+seldonvigil trace export --from 2024-01-01 --to 2024-01-02 --output traces.json
+```
 
-# Get trace details
-seldonvigil observability trace TRACE_ID
+### Demo Data
 
-# Get agent statistics
-seldonvigil observability stats AGENT_ID
+```bash
+seldonvigil seed
 ```
 
 ### Output Formatting
 
+Most commands accept `--output`:
+
 ```bash
-# JSON output
 seldonvigil agent list --output json
-
-# Table output (default)
 seldonvigil agent list --output table
-
-# YAML output
-seldonvigil agent list --output yaml
 ```
 
 ---
@@ -1504,6 +1415,6 @@ See [CHANGELOG.md](../CHANGELOG.md) for version history and release notes.
 
 ---
 
-**Last Updated:** January 2026  
-**Version:** 1.0.0  
+**Last Updated:** 2026-11-13  
+**Version:** 0.1.0  
 **Maintained By:** SeldonVigil Platform Team
