@@ -180,6 +180,20 @@ internal static class GovernanceEndpoints
         var certGroup = group.MapGroup("/certification")
             .WithTags("Certification Pipelines");
 
+        certGroup.MapGet("/", async (
+            IRequestContext requestContext,
+            CertificationPipelineRepository repository,
+            CancellationToken ct) =>
+        {
+            var tenantId = requestContext.TenantId;
+            if (string.IsNullOrEmpty(tenantId)) return Results.BadRequest(new { error = "Tenant required" });
+
+            var pipelines = await repository.GetByTenantAsync(tenantId, ct).ConfigureAwait(false);
+            return Results.Ok(pipelines.Select(MapPipelineToDto).ToList());
+        })
+        .WithName("ListCertificationPipelines")
+        .WithSummary("List certification pipelines for the tenant");
+
         certGroup.MapPost("/trigger", async (
             TriggerCertificationRequest request,
             IRequestContext requestContext,
