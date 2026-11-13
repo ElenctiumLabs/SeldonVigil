@@ -35,7 +35,7 @@ export function CostTrendChart({
         month: 'short', 
         day: 'numeric' 
       }),
-      cost: Number(point.cost),
+      cost: Number(point.cost ?? 0),
       budget: point.budget || 0
     }))
   }, [data])

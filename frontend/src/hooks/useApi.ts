@@ -64,8 +64,11 @@ interface CostTrendParams {
 }
 
 interface CostTrendData {
-  amount: any
-  tokens: number
+  date: string
+  amount: { amount: number; currency: string }
+}
+
+interface CostTrendPoint {
   date: string
   cost: number
   budget?: number
@@ -139,9 +142,14 @@ export function useBudgets() {
 export function useCostTrend({ agentId, days = 7 }: CostTrendParams) {
   return useQuery({
     queryKey: ['costTrend', agentId, days],
-    queryFn: async () => {
+    queryFn: async (): Promise<CostTrendPoint[]> => {
       const response = await apiClient.get<CostDashboardDto>('/costs/dashboard')
-      return response.data.dailyTrend || []
+      // The API returns each point as { date, amount: { amount, currency } };
+      // normalise it here so the chart and the trend maths get a plain number.
+      return (response.data.dailyTrend || []).map(point => ({
+        date: point.date,
+        cost: Number(point.amount?.amount ?? 0),
+      }))
     },
   })
 }
@@ -239,8 +247,12 @@ export function useSecurityViolations(params?: { from?: string; to?: string; sev
   return useQuery({
     queryKey: ['securityViolations', params],
     queryFn: async () => {
-      const response = await apiClient.get<SecurityViolation[]>('/security/violations', { params })
-      return response.data
+      // The endpoint returns a PaginatedResult ({ items, totalCount, ... }),
+      // not a bare array.
+      const response = await apiClient.get<{ items: SecurityViolation[] }>('/security/violations', {
+        params: { pageSize: 100, ...params },
+      })
+      return response.data?.items ?? []
     },
   })
 }
