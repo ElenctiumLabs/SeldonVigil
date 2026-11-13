@@ -1,7 +1,7 @@
 param(
-	[string]$Url = "https://localhost:61993",
+	[string]$Url = "http://localhost:8080",
 	[int]$Hours = 24,
-	[string]$Role = "Administrator",
+	[string]$Role = "admin",
 	[string]$Sub = "dev-user",
 	[string]$OutFile = ".devtoken"
 )

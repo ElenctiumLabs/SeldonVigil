@@ -28,3 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Packages renamed to SeldonVigil.Sdk, SeldonVigil.Telemetry and SeldonVigil.Cli
 - MediatR and AutoMapper pinned to their last open-source releases
 - dotnet-ef bumped to 10.0.10
+
+### Fixed
+- Cost trend charts on the Dashboard and Costs pages now read the API's money value
+  rather than an undefined field, which left the series as NaN and the area, y-axis
+  and period delta unrendered
+- The Security page now unwraps the paginated violations response; the list and its
+  counts were always empty
+- The Certification page now lists the tenant's pipelines through the new
+  `GET /api/v1/governance/certification` endpoint rather than always rendering empty
+- The governance API reference now lists the routes the application actually exposes
