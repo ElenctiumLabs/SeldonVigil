@@ -28,7 +28,7 @@ Prometheus for metrics. PostgreSQL runs on the host.
 |-------|------------|---------|
 | **Runtime** | .NET 10 | 10.0 |
 | **API** | ASP.NET Core minimal APIs | 10.0 |
-| **Database** | PostgreSQL + pgvector | 15+ |
+| **Database** | PostgreSQL + pgvector | 18+ |
 | **Cache** | In-memory (default) / Garnet or Redis (optional) | Latest |
 | **Event Broker** | Redpanda | v26.2.2 |
 | **Vector Store** | pgvector | - |
@@ -123,7 +123,7 @@ production deployment fails closed instead of silently running in development mo
 ### PostgreSQL (Required)
 | Requirement | Specification |
 |-------------|---------------|
-| **Version** | 15+ |
+| **Version** | 18+ |
 | **Extensions** | `vector` (pgvector), `uuid-ossp` |
 | **Collation** | `en_US.UTF-8` |
 | **Max Connections** | 200+ (per pool) |
@@ -209,7 +209,7 @@ cp infrastructure/docker/.env.example infrastructure/docker/.env
 # Edit .env with secure passwords
 
 # 3. Start PostgreSQL on host (not in compose)
-sudo apt install postgresql-15 postgresql-15-pgvector
+sudo apt install postgresql-18 postgresql-18-pgvector
 sudo -u postgres psql -c "CREATE DATABASE seldonvigil;"
 sudo -u postgres psql -c "CREATE USER seldonvigil WITH ENCRYPTED PASSWORD '...';"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE seldonvigil TO seldonvigil;"
