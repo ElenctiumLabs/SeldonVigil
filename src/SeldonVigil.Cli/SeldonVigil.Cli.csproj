@@ -7,11 +7,26 @@
     <ToolCommandName>seldonvigil</ToolCommandName>
     <PackageId>SeldonVigil.Cli</PackageId>
     <Version>1.0.0</Version>
+    <Authors>ElenctiumLabs</Authors>
+    <Description>Command-line tool for the SeldonVigil governance platform</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageProjectUrl>https://github.com/ElenctiumLabs/SeldonVigil</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ElenctiumLabs/SeldonVigil</RepositoryUrl>
+    <PackageTags>CLI;AI;Agent;Governance;Security;Observability;SeldonVigil</PackageTags>
+    <PackageReleaseNotes>Initial release of the SeldonVigil command-line tool</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SeldonVigil.Sdk\SeldonVigil.Sdk.csproj" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Spectre.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

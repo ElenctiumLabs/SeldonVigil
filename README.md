@@ -1,5 +1,10 @@
 # SeldonVigil
 
+[![CI](https://github.com/ElenctiumLabs/SeldonVigil/actions/workflows/ci.yml/badge.svg)](https://github.com/ElenctiumLabs/SeldonVigil/actions/workflows/ci.yml)
+[![Security Scan](https://github.com/ElenctiumLabs/SeldonVigil/actions/workflows/security-scan.yml/badge.svg)](https://github.com/ElenctiumLabs/SeldonVigil/actions/workflows/security-scan.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/ElenctiumLabs/SeldonVigil)](https://github.com/ElenctiumLabs/SeldonVigil/releases)
+
 **SeldonVigil** is an enterprise-grade observability, security, and governance platform for AI agent systems.
 
 ## Copyright

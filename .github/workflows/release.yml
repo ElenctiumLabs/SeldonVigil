@@ -6,7 +6,39 @@ on:
       - 'v*'
 
 jobs:
+  publish-nuget:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # GitHub OIDC token for NuGet/login
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build packages
+        run: |
+          dotnet build src/SeldonVigil.Sdk/SeldonVigil.Sdk.csproj -c Release
+          dotnet build src/SeldonVigil.Telemetry/SeldonVigil.Telemetry.csproj -c Release
+          dotnet build src/SeldonVigil.Cli/SeldonVigil.Cli.csproj -c Release
+
+      - name: NuGet login (OIDC -> temp API key)
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push to nuget.org
+        run: |
+          dotnet nuget push src/SeldonVigil.Sdk/bin/Release/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/SeldonVigil.Telemetry/bin/Release/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push src/SeldonVigil.Cli/bin/Release/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
   release:
+    needs: publish-nuget
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

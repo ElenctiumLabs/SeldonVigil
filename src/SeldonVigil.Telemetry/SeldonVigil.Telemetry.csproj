@@ -11,6 +11,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageProjectUrl>https://github.com/ElenctiumLabs/SeldonVigil</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ElenctiumLabs/SeldonVigil</RepositoryUrl>
     <PackageTags>Serilog;OpenTelemetry;Observability;Metrics;Tracing;SeldonVigil</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
