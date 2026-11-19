@@ -71,7 +71,7 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.OpenTelemetry" Version="4.2.0" />
     <PackageVersion Include="System.CommandLine" Version="3.0.0" />
-    <PackageVersion Include="Testcontainers.Redpanda" Version="4.16.0" />
+    <PackageVersion Include="Testcontainers.Redpanda" Version="4.17.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.16.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
